@@ -1,0 +1,7 @@
+Enabled: yes
+Types: deb
+URIs: http://dl.google.com/linux/chrome/deb/
+Suites: stable
+Components: main
+Signed-By: /usr/share/keyrings/google-Linux-Packages-Signing-Authority.pub.gpg
+Architectures: amd64

@@ -1,0 +1,7 @@
+Enabled: yes
+Types: deb
+URIs: https://packages.microsoft.com/repos/code
+Suites: stable
+Components: main
+Signed-By: /usr/share/keyrings/gpgsecurity.microsoft.com.gpg
+Architectures: amd64

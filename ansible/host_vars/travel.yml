@@ -4,10 +4,79 @@ users:
    - name: 'd'
      install_inputrc: true
      groups: [sudo, docker, video]
+     packages:
+        add_sys_repos: # as opposed to pip, rust, etc...
+           - gpg    : data/google-Linux-Packages-Signing-Authority.pub.gpg
+             sources: data/google-chrome.sources
+           - gpg    : data/gpgsecurity.microsoft.com.gpg
+             sources: data/packages.microsoft.com.sources
+           - gpg    : data/brave-browser-archive-keyring.gpg
+             sources: data/brave-browser.sources
+        add_sys_pkgs: [
+           filelight           , kdiff3             , kompare             , krusader          ,
+           google-chrome-stable, google-chrome-beta ,
+           git                 , curl               , apt-file            , bat               ,
+           htop                , ppa-purge          , qrencode            , ripgrep           ,
+           python3-docker      , python3-pexpect                                              ,
+           iftop               , iotop              , nmap                , net-tools         ,
+           code                , fonts-firacode                                               ,
+        ]
+
+    #  install_fish:
+    #     env                : /home/u/travel/fish/env.fish
+    #     install_scripts_dir: /home/u/travel/20_fish/
+
 
    - name: 'y'
      install_inputrc: true
      groups: [sudo, docker, video]
 
+
 packages:
-   add_sys_pkgs: [ ripgrep ]
+   add_sys_pkgs: [
+      kubuntu-desktop,
+      openssl                , pesign                       , qemu-utils,
+      lm-sensors,
+   ]
+
+
+tunables:
+   sysctl:
+      kernel.perf_event_paranoid               : -1
+      fs.inotify.max_user_watches              : 16777216
+      fs.inotify.max_user_instances            : 1048576
+      vm.max_map_count                         : 2097152
+      kernel.unprivileged_bpf_disabled         : 1
+      net.core.bpf_jit_harden                  : 2
+      dev.tty.ldisc_autoload                   : 0
+      kernel.kexec_load_disabled               : 1
+      net.ipv4.tcp_rfc1337                     : 1
+      net.ipv4.conf.all.rp_filter              : 1
+      net.ipv4.conf.default.rp_filter          : 1
+      net.ipv4.conf.default.accept_redirects   : 0
+      net.ipv4.conf.all.accept_redirects       : 0
+      net.ipv6.conf.all.accept_redirects       : 0
+      net.ipv6.conf.default.accept_redirects   : 0
+      net.ipv4.conf.all.secure_redirects       : 0
+      net.ipv4.conf.default.secure_redirects   : 0
+      net.ipv4.conf.all.send_redirects         : 0
+      net.ipv4.conf.default.send_redirects     : 0
+      net.ipv4.conf.default.accept_source_route: 0
+      net.ipv4.conf.all.accept_source_route    : 0
+      net.ipv6.conf.all.accept_source_route    : 0
+      net.ipv6.conf.default.accept_source_route: 0
+      net.ipv6.conf.all.accept_ra              : 0
+      net.ipv6.conf.default.accept_ra          : 0
+      net.ipv4.tcp_sack                        : 0
+      net.ipv4.tcp_dsack                       : 0
+      net.ipv4.tcp_timestamps                  : 0
+      vm.mmap_rnd_bits                         : 32
+      vm.mmap_rnd_compat_bits                  : 16
+      fs.protected_fifos                       : 2
+      fs.protected_regular                     : 2
+      fs.protected_symlinks                    : 1
+      fs.protected_hardlinks                   : 1
+   limits:
+      nofile:
+         soft: 16777216
+         hard: 16777216
