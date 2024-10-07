@@ -1,0 +1,13 @@
+# code: language=ansible
+
+users:
+   - name: 'd'
+     install_inputrc: true
+     groups: [sudo, docker, video]
+
+   - name: 'y'
+     install_inputrc: true
+     groups: [sudo, docker, video]
+
+packages:
+   add_sys_pkgs: [ ripgrep ]

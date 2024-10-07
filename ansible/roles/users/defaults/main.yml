@@ -1,0 +1,4 @@
+users_default_cfg:
+   install_inputrc: false
+   groups: []
+   ssh_conf: []

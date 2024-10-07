@@ -103,7 +103,7 @@ function photo-transfer
       set -l actual_label (lsblk --json -f $device | jq -r '.blockdevices[0].children[0].label')
       if test "$actual_label" = "$src_sd_label"
          echo "Found device: "(set_color bryellow)$device(set_color normal)" with the label: "(set_color bryellow)$src_sd_label(set_color normal)
-         read -P "Press 'y' key to continue, or any other key to exit: " answer
+         read -P "Press 'y' key to continue, or any other key to exit: " answer || return
          if test "$answer" != "y"
             echo "exiting..."
             return
@@ -129,7 +129,7 @@ function photo-transfer
    # echo (set_color bryellow)"Moving files from $tmp_dir to $photo_incoming_dir..."(set_color normal)
    # find $tmp_dir -type f -print0 | xargs -0 -P (nproc) -I {} mv --no-clobber "{}" "$photo_incoming_dir"
 
-   read -P "Check the dir: $tmp_dir and press 'y' key to umount and format, or any other key to exit: " answer
+   read -P "Check the dir: $tmp_dir and press 'y' key to umount and format, or any other key to exit: " answer || return
    if test "$answer" != "y"
       echo "exiting..."
       return

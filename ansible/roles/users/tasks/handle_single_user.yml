@@ -1,0 +1,162 @@
+# code: language=ansible
+
+- name: Dump all variables
+  debug:
+    var: user.ssh_conf
+
+
+- name: Manage groups and user membership for "{{ user.name }}"
+  when: user.groups
+  become: true
+  block:
+    - name: Ensure groups exist for "{{ user.name }}"
+      loop: "{{ user.groups }}"
+      group:
+        name: "{{ item }}"
+        state: present
+    - name: Add "{{ user.name }}" user to groups
+      user: # https://docs.ansible.com/ansible/2.9/modules/user_module.html#user-module
+         name  : "{{ user.name }}"
+         groups: "{{ user.groups }}"
+         append: yes
+
+- name: Get "{{ user.name }}" details
+  getent:
+     database: passwd
+     key     : "{{ user.name }}"
+
+- name: Setup SSH configuration for "{{ user.name }}"
+  block:
+    - name: Ensure .ssh directory exists for "{{ user.name }}"
+      become: true
+      become_user: "{{ user.name }}"
+      file:
+        path: "{{ getent_passwd[user.name][4] }}/.ssh"
+        state: directory
+        owner: "{{ user.name }}"
+        group: "{{ user.name }}"
+        mode: 0700
+    - name: Initialise ssh_config for "{{ user.name }}"
+      become: true
+      become_user: "{{ user.name }}"
+      loop: "{{ user.ssh_conf }}"
+      loop_control:
+         loop_var: block
+      blockinfile:
+         create: true
+         path  : "{{ getent_passwd[user.name][4] }}/.ssh/config"
+         block : "{{ block }}"
+         owner : "{{ user.name }}"
+         group : "{{ user.name }}"
+         marker: "# {mark} MARKER FOR ANSIBLE MANAGED BLOCK for {{ block.split('\n')[0] }}"
+         mode  : 0600
+
+- name: Install .inputrc for "{{ user.name }}"
+  become: true
+  become_user: "{{ user.name }}"
+  when:
+     - "'install_inputrc' in user"
+     - user.install_inputrc
+  blockinfile:
+     create: true
+     path  : "{{ getent_passwd[user.name][4] }}/.inputrc"
+     block: |
+        "\C-H": backward-kill-word
+        "\C-[[1;5D"; backward-word
+        "\C-[[1;5C"; forward-word
+     owner : "{{ user.name }}"
+     group : "{{ user.name }}"
+
+- name: Get control node hostname
+  shell: hostname
+  register: control_node_hostname # as opposed to target node, against which ansible is running
+  delegate_to: localhost
+  run_once: true
+
+- name: Install fish for "{{ user.name }}" remotely
+  when:
+     - "'install_fish' in user"
+     - "'env' in user.install_fish"
+     - "'install_scripts_dir' in user.install_fish"
+     - ansible_hostname != control_node_hostname.stdout # this task is only for remote hosts
+
+  block:
+     - debug:
+          msg: "Running remotely, user home: {{ getent_passwd[user.name][4] }}, ansible_hostname: {{ ansible_hostname }}, control host: {{ control_node_hostname.stdout }}"
+     - name: "Install git, needed for fish"
+       become: true
+       apt:
+          name: [git, fish]
+          state: present
+          update_cache: true
+          cache_valid_time: 21600
+
+     - name: "Install fish: Copy the installer script to a temporary directory on the remote host"
+       copy:
+          src: "{{ user.install_fish.install_scripts_dir }}/install_fish_only.sh"
+          dest: "/tmp/install_fish_only.sh"
+          mode: '0755'
+
+     - name: "Install fish: Execute the fish installer script on the remote host"
+       command:
+          cmd: "/tmp/install_fish_only.sh"
+
+     - name: "Install fish: Remove the fish installer script from the remote host"
+       file:
+          path: "/tmp/install_fish_only.sh"
+          state: absent
+
+     - name: "Install fish: Create a temporary directory on localhost"
+       tempfile:
+         state: directory
+       register: tempdir
+       delegate_to: localhost
+
+     - name: "Install fish: Execute the install_fish.fish script locally with destination argument"
+       command: "{{ user.install_fish.install_scripts_dir }}/install_fish.fish --env {{ user.install_fish.env }} --destination {{ tempdir.path }}"
+       delegate_to: localhost
+
+     - name: "Install fish: Get the current user"
+       command: whoami
+       register: current_user
+       changed_when: false
+
+     - name: "Install fish: Synchronize the local temporary directory to the remote host's user home"
+       synchronize:
+          mode: push
+          checksum: true
+          src: "{{ tempdir.path }}/."  # Ensuring all contents inside the directory are copied.
+          dest: "{{ getent_passwd[user.name][4] }}/.config/fish"
+          rsync_opts:
+             - "--chown={{ current_user.stdout }}:{{ current_user.stdout }}"
+
+     - name: "Install fish: Remove the temporary directory from localhost"
+       file:
+          path: "{{ tempdir.path }}"
+          state: absent
+       delegate_to: localhost
+
+- name: Install fish for "{{ user.name }}" locally, ansible_hostname "{{ ansible_hostname }}", control_node_hostname "{{ control_node_hostname.stdout }}"
+  when:
+     - "'install_fish' in user"
+     - "'env' in user.install_fish"
+     - "'install_scripts_dir' in user.install_fish"
+     - ansible_hostname == control_node_hostname.stdout # this task is only for local hosts
+
+  block:
+     - debug:
+          msg: "Running locally, will execute: {{ user.install_fish.install_scripts_dir }}/install_fish.sh --env {{ user.install_fish.env }}"
+
+     - name: "Install fish and git, needed for fish"
+       become: true
+       apt:
+          name: [git, fish]
+          state: present
+          update_cache: true
+          cache_valid_time: 21600
+
+     - name: Execute the fish installer script localhost
+       become: true
+       become_user: "{{ user.name }}"
+       command:
+          cmd: "{{ user.install_fish.install_scripts_dir }}/install_fish.sh --env {{ user.install_fish.env }}"

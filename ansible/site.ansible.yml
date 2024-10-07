@@ -1,0 +1,61 @@
+- hosts: all
+  gather_facts: false
+  vars_files:
+    - host_vars/{{ansible_hostname}}.yml
+  tasks:
+     - name: Gather only ansible_hostname fact
+       setup:
+          filter:
+             - ansible_hostname
+
+- hosts: all
+  gather_facts: false
+  roles:
+     - role: packages
+       role_cfg: "{{[packages | default({})] + users | map(attribute='packages', default={}) }}"
+     - role: tunables
+       role_cfg: "{{ tunables | default({}) }}"
+     - role: modprobes
+       role_cfg: "{{ modprobes | default([]) }}"
+     - role: users
+       role_cfg: "{{ users | default([]) | map('combine', users_default_cfg, recursive=True) |
+                     zip(users) | map('combine') }}"
+
+  tasks:
+     - name: "adhoc_udev: collect user-specific rules and system"
+       set_fact:
+          adhoc_udev_all_rules: "{{adhoc_udev | default([]) +
+                                   users | subelements('adhoc_udev', skip_missing=True) | map(attribute='1') | list}}"
+
+     - name: "adhoc_udev: write rules to file"
+       when: adhoc_udev_all_rules | length > 0
+       become: true
+       copy: # https://docs.ansible.com/ansible/2.8/modules/copy_module.html#copy-module
+          content: "{% for rule in adhoc_udev_all_rules %}{{ rule }}\n{% endfor %}"
+          dest: /etc/udev/rules.d/99-ansible-adhoc-udev.rules
+       register: adhoc_udev_copy_result
+
+     - name: "adhoc_udev: Reload if needed"
+       when:
+          - adhoc_udev_all_rules | length > 0
+          - adhoc_udev_copy_result.changed
+       become: true
+       command: udevadm control --reload-rules
+
+     - name: sysupgrade & restart
+       when:
+          - perform_sysupgrade_and_restart is defined
+          - perform_sysupgrade_and_restart
+       become: true
+       block:
+          - name: Update apt cache and perform a full upgrade
+            apt:
+               update_cache: yes
+               upgrade: full
+
+          - name: Force all notified handlers to run now
+            meta: flush_handlers
+
+          - name: Reboot the server
+            reboot:
+               reboot_timeout: 1

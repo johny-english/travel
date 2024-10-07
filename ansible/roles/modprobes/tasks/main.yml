@@ -1,0 +1,8 @@
+- name: Install modprobes
+  become: true
+  loop: "{{ role_cfg }}"
+  loop_control:
+     loop_var: modprobe
+  copy:
+     src: "{{ modprobe }}"
+     dest: "/etc/modprobe.d/{{ modprobe | basename }}"

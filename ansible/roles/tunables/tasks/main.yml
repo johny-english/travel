@@ -1,0 +1,49 @@
+# code: language=ansible
+
+- name: Set hugepages
+  when: "'huge_pages' in role_cfg"
+  block:
+      - name: Set GiB pages
+        become: true
+        when: "'gib' in role_cfg.huge_pages"
+        shell: "echo {{ role_cfg.huge_pages.gib }} > /sys/kernel/mm/hugepages/hugepages-1048576kB/nr_hugepages"
+      - name: Set 2MiB pages
+        become: true
+        when: "'two_mib' in role_cfg.huge_pages"
+        shell: "echo {{ role_cfg.huge_pages.two_mib }} > /sys/kernel/mm/hugepages/hugepages-2048kB/nr_hugepages"
+
+- name: cpupower
+  when: "'cpupower' in role_cfg"
+  block:
+     - name: Install
+       become: true
+       apt: {name: ["linux-tools-common", "linux-tools-generic"], state: present, update_cache: true, cache_valid_time: 21600}
+     - name: Set governor
+       become: true
+       command: "cpupower frequency-set --governor {{ role_cfg.cpupower }}"
+
+- name: sysctl
+  when: "'sysctl' in role_cfg"
+  become: true
+  sysctl:
+     name  : "{{ item.key }}"
+     value : "{{ item.value }}"
+     reload: true
+     state : present
+  loop: "{{ role_cfg.sysctl | dict2items }}"
+
+- name: Prepare the triplets for limits
+  when: "'limits' in role_cfg"
+  set_fact:
+     tunables_limits_triplets: "{% set result = [] %}{% for k, v in role_cfg.limits.items() %}{% for k2, v2 in v.items() %}{% set _ = result.append([k, k2, v2]) %}{% endfor %}{% endfor %}{{ result }}"
+
+- name: limits
+  when: "'limits' in role_cfg"
+  become: true
+  # debug: {var: item}
+  pam_limits:
+     domain    : '*'
+     limit_item: "{{ item[0] }}"  # 'nofile', 'core', etc.
+     limit_type: "{{ item[1] }}"  # 'soft' or 'hard'
+     value     : "{{ item[2] }}"
+  loop: "{{ tunables_limits_triplets }}"

@@ -1,0 +1,14 @@
+# code: language=ansible
+
+- name: install_package_deferred__sys
+  listen: install_package_deferred__sys # aka apt packages to install
+  become: true
+  apt:
+    name: "{{ install_package_deferred__sys | unique }}"
+    state: present
+    update_cache: true
+
+- name: Clear deferred package list
+  listen: install_package_deferred__sys # aka apt packages to install
+  set_fact:
+     install_package_deferred__sys: []

@@ -1,0 +1,48 @@
+# code: language=ansible
+
+# - name: Dump all variables
+#   debug:
+#     var: role_cfg
+
+- name: Repack input
+  set_fact:
+     packages__add_sys_pkgs : "{{ role_cfg | map(attribute='add_sys_pkgs' , default=[]) | list | sum(start=[]) }}"
+     packages__rem_sys_pkgs : "{{ role_cfg | map(attribute='rem_sys_pkgs' , default=[]) | list | sum(start=[]) }}"
+     packages__add_sys_repos: "{{ role_cfg | map(attribute='add_sys_repos', default=[]) | list | sum(start=[]) }}"
+
+-  name: Add sys repos
+   block:
+      - name: Copy GPG key
+        loop: "{{ packages__add_sys_repos  }}"
+        loop_control:
+           loop_var: repo
+        become: true
+        copy:
+          src: "{{ repo.gpg }}"
+          dest: "/usr/share/keyrings/{{ repo.gpg | basename }}"
+          owner: root
+          group: root
+          mode: '0644'
+      - name: Copy sources list
+        loop: "{{ packages__add_sys_repos }}"
+        loop_control:
+           loop_var: repo
+        become: true
+        copy:
+          src: "{{ repo.sources }}"
+          dest: "/etc/apt/sources.list.d/{{ repo.sources | basename }}"
+          owner: root
+          group: root
+          mode: '0644'
+
+- name: Install system packages
+  set_fact:
+     install_package_deferred__sys: "{{ install_package_deferred__sys + packages__add_sys_pkgs }}"
+  changed_when: true
+  notify: install_package_deferred__sys
+
+- name: Uninstall system packages
+  become: true
+  apt:
+     name: "{{ packages__rem_sys_pkgs }}"
+     state: absent

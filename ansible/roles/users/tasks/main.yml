@@ -1,0 +1,5 @@
+- name: Iterate over users
+  loop: "{{ role_cfg }}"
+  loop_control:
+     loop_var: user
+  include_tasks: handle_single_user.yml
