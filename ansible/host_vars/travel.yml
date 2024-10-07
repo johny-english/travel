@@ -80,3 +80,6 @@ tunables:
       nofile:
          soft: 16777216
          hard: 16777216
+
+modprobes:
+   - data/modprobe-blacklist-ipu6.conf
