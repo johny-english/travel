@@ -27,7 +27,7 @@ function impl_config_fish
    echo $REPO_ROOT_DIR/20_fish/config_add_rust_to_path.fish
 end
 function impl_fish_home_path
-   echo $HOME/travel-fish-test
+   echo $HOME
 end
 function impl_on_fish_install
 end

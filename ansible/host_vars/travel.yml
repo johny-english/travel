@@ -22,14 +22,18 @@ users:
            code                , fonts-firacode                                               ,
         ]
 
-    #  install_fish:
-    #     env                : /home/u/travel/fish/env.fish
-    #     install_scripts_dir: /home/u/travel/20_fish/
+     install_fish:
+        env                : /home/u/travel/fish/env.fish
+        install_scripts_dir: /home/u/travel/20_fish/
 
 
    - name: 'y'
      install_inputrc: true
      groups: [sudo, docker, video]
+
+     install_fish:
+        env                : /home/u/travel/fish/env.fish
+        install_scripts_dir: /home/u/travel/20_fish/
 
 
 packages:
@@ -83,3 +87,7 @@ tunables:
 
 modprobes:
    - data/modprobe-blacklist-ipu6.conf
+
+
+# ansible-playbook -i /home/u/travel/ansible/inventory.ini --limit travel /home/u/travel/ansible/site.ansible.yml
+# sudo chsh -s /usr/bin/fish $(whoami)
