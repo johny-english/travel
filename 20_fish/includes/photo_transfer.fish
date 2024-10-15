@@ -33,8 +33,10 @@ function photo-canonicalise-sinlge-file --argument-names path dst_dir
    set -l new_path $dst_dir/$new_filename
    # Do not overwrite the destination if it already exists:
    RunVerbosely mv --no-clobber "$path" "$new_path"
+   # RunVerbosely cp --update=none "$path" "$new_path"
    if test -f $path.xmp
       RunVerbosely mv --no-clobber "$path.xmp" "$new_path.xmp"
+      # RunVerbosely cp --update=none "$path.xmp" "$new_path.xmp"
    end
 end
 
@@ -80,7 +82,8 @@ function photo-transfer
       return
    end
 
-   mkdir -p $photo_incoming_dir
+   RunVerbosely sudo mkdir -p $photo_incoming_dir || return 1
+   RunVerbosely sudo chown -R (whoami):(whoami) $photo_incoming_dir
    InstallIfNeeded exiftool   exiftool
    InstallIfNeeded jq         jq
    InstallIfNeeded mkfs.exfat exfatprogs

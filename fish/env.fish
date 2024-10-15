@@ -2,7 +2,7 @@
 function impl_get_install_fish_info
    set -l this_fn (basename (realpath (status current-filename)))
    set -l this_dir (dirname (realpath (status current-filename)))
-   set -l REPO_ROOT_DIR $this_dir/..
+   set -l REPO_ROOT_DIR $HOME/devel/travel
    echo $REPO_ROOT_DIR/20_fish/install_fish.fish        # script to use for installation
    echo $REPO_ROOT_DIR/fish/$this_fn                    # env
    echo $REPO_ROOT_DIR/fish/env.json
@@ -14,6 +14,8 @@ function impl_mixin_deps
    echo $REPO_ROOT_DIR/20_fish/includes/common_fish_setup.fish
    echo $REPO_ROOT_DIR/20_fish/includes/reinstall_fish_includes.fish
    echo $REPO_ROOT_DIR/20_fish/includes/bat.fish
+   echo $REPO_ROOT_DIR/20_fish/includes/eph.fish
+   echo $REPO_ROOT_DIR/20_fish/includes/as_qr.fish
    echo $REPO_ROOT_DIR/20_fish/includes/sysupgrade_simple.fish
    echo $REPO_ROOT_DIR/20_fish/includes/git_abbrs_functions.fish
    echo $REPO_ROOT_DIR/20_fish/includes/git_look_and_feel.fish
