@@ -32,11 +32,9 @@ function photo-canonicalise-sinlge-file --argument-names path dst_dir
    end
    set -l new_path $dst_dir/$new_filename
    # Do not overwrite the destination if it already exists:
-   RunVerbosely mv --no-clobber "$path" "$new_path"
-   # RunVerbosely cp --update=none "$path" "$new_path"
+   RunVerbosely cp --update=none "$path" "$new_path"
    if test -f $path.xmp
-      RunVerbosely mv --no-clobber "$path.xmp" "$new_path.xmp"
-      # RunVerbosely cp --update=none "$path.xmp" "$new_path.xmp"
+      RunVerbosely cp --update=none "$path.xmp" "$new_path.xmp"
    end
 end
 
