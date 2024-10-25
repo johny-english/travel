@@ -23,8 +23,8 @@ users:
         ]
 
      install_fish:
-        env                : /home/u/travel/fish/env.fish
-        install_scripts_dir: /home/u/travel/20_fish/
+        env                : /home/d/devel/travel/fish/env.fish
+        install_scripts_dir: /home/d/devel/travel/20_fish/
 
 
    - name: 'y'
@@ -32,8 +32,8 @@ users:
      groups: [sudo, docker, video]
 
      install_fish:
-        env                : /home/u/travel/fish/env.fish
-        install_scripts_dir: /home/u/travel/20_fish/
+        env                : /home/y/devel/travel/fish/env.fish
+        install_scripts_dir: /home/y/devel/travel/20_fish/
 
 
 packages:
@@ -41,8 +41,6 @@ packages:
       kubuntu-desktop,
       openssl                , pesign                       , qemu-utils,
       lm-sensors,
-
-      # Yubikey packages:
       yubikey-luks           , yubikey-personalization      ,            # luks
       libpam-u2f             , pamu2fcfg                    ,            # sudo_u2f
       yubikey-personalization, libpam-yubico                ,            # sudo_chal_resp
