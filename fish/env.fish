@@ -22,6 +22,7 @@ function impl_mixin_deps
    echo $REPO_ROOT_DIR/20_fish/includes/docker_att.fish
    echo $REPO_ROOT_DIR/20_fish/includes/gpg_gen.fish
    echo $REPO_ROOT_DIR/20_fish/includes/photo_transfer.fish
+   echo $REPO_ROOT_DIR/20_fish/includes/kde_setup.fish
 end
 function impl_config_fish
    set -l this_dir (dirname (realpath (status current-filename)))
