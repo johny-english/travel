@@ -135,6 +135,7 @@ function ephu-login
       return 1
    end
    eph-mount  --name $_flag_name   || return 1
+   RunVerbosely sudo passwd -u $_flag_name
    /usr/lib/qt6/bin/qdbus org.kde.ksmserver /KSMServer org.kde.KSMServerInterface.openSwitchUserDialog
 end
 
@@ -145,8 +146,8 @@ function ephu-logout
       echo "Specify --name <name of your storge>"
       return 1
    end
-   RunVerbosely loginctl kill-user --signal=15 $_flag_name
-   RunVerbosely loginctl terminate-user $_flag_name
+   RunVerbosely sudo loginctl kill-user --signal=15 $_flag_name
+   RunVerbosely sudo loginctl terminate-user $_flag_name
    RunVerbosely sudo passwd -l $_flag_name
    eph-umount --name $_flag_name
 end

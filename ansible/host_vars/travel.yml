@@ -41,6 +41,13 @@ packages:
       kubuntu-desktop,
       openssl                , pesign                       , qemu-utils,
       lm-sensors,
+
+      # Yubikey packages:
+      yubikey-luks           , yubikey-personalization      ,            # luks
+      libpam-u2f             , pamu2fcfg                    ,            # sudo_u2f
+      yubikey-personalization, libpam-yubico                ,            # sudo_chal_resp
+      libnfc-bin             , pcsc-tools                   , scdaemon,  # smartcard
+      yubikey-manager        , yubico-piv-tool            # , yubikey-personalization-gui,            # other
    ]
 
 
