@@ -110,7 +110,7 @@ function ephu-create
    eph-create --name $_flag_name --size $size                                 || return 1
    eph-mount  --name $_flag_name                                              || return 1
    RunVerbosely sudo useradd -d $MOUNT_POINT/$lvname -s /bin/bash $_flag_name || return 1
-   RunVerbosely echo $_flag_name | sudo chpasswd
+   RunVerbosely echo $_flag_name:$_flag_name | sudo chpasswd
    RunVerbosely sudo cp -r /etc/skel/. $MOUNT_POINT/$lvname
    RunVerbosely sudo chown -R $_flag_name:$_flag_name $MOUNT_POINT/$lvname    || return 1
    eph-umount  --name $_flag_name                                             || return 1
@@ -151,3 +151,8 @@ function ephu-logout
    RunVerbosely sudo passwd -l $_flag_name
    eph-umount --name $_flag_name
 end
+
+# Resize volumes:
+# sudo cryptsetup open /dev/ubuntu-vg/ephs-devel ephs-devel
+# sudo lvresize --size 10G --resizefs ubuntu-vg/ephs-devel
+# sudo lvresize --size +120g --resizefs ubuntu-vg/ephs-ph
