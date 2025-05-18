@@ -8,8 +8,8 @@ sudo apt install -y git fish curl fonts-powerline
 set -e
 
 # TODO: switch to https://github.com/jorgebucaran/awsm.fish#readme ?
-curl --insecure -L https://get.oh-my.fish > /tmp/install
-echo "429a76e5b5e692c921aa03456a41258b614374426f959535167222a28b676201 /tmp/install" | sha256sum --check
+curl https://raw.githubusercontent.com/oh-my-fish/oh-my-fish/master/bin/install > /tmp/install
+echo "1464a0163257e729579735955a834ccff4c3eb2e91d015e96e459382acaab2b7 /tmp/install" | sha256sum --check
 fish /tmp/install --path=~/.local/share/omf --config=~/.config/omf --noninteractive --yes
 rm /tmp/install
 fish -c "omf install bobthefish"
