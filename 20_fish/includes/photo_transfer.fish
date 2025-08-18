@@ -75,19 +75,9 @@ end
 
 
 function photo-transfer
-   argparse "dd" -- $argv || return
-   set photo_incoming_dir (json_settings::get_val --key "PhotoUtils.IncomingDir")
-   if test -z "$photo_incoming_dir"
-      echo "PhotoUtils.IncomingDir is not set"
-      return
-   end
+   argparse "format-only" "dd" -- $argv || return
 
-   RunVerbosely sudo mkdir -p $photo_incoming_dir || return 1
-   RunVerbosely sudo chown -R (whoami):(whoami) $photo_incoming_dir
-   InstallIfNeeded exiftool   exiftool
-   InstallIfNeeded jq         jq
-   InstallIfNeeded mkfs.exfat exfatprogs
-
+   # Let's find the device with the label:
    set dev
    set part
    set -l src_sd_label (json_settings::get_val --key "PhotoUtils.SDLabelSrc")
@@ -122,15 +112,28 @@ function photo-transfer
    end
    echo -e "\nWorking with the device $dev...\n"
 
+   # We were asked to transfer as well:
+   if not set -q _flag_format_only
+      set photo_incoming_dir (json_settings::get_val --key "PhotoUtils.IncomingDir")
+      if test -z "$photo_incoming_dir"
+         echo "PhotoUtils.IncomingDir is not set"
+         return
+      end
 
-   set tmp_dir (RunVerbosely sudo mktemp -d /media/photo-transfer-XXXXX)
-   RunVerbosely sudo mount -o uid=(id -u) $part $tmp_dir
+      RunVerbosely sudo mkdir -p $photo_incoming_dir || return 1
+      RunVerbosely sudo chown -R (whoami):(whoami) $photo_incoming_dir
+      InstallIfNeeded exiftool   exiftool
+      InstallIfNeeded jq         jq
+      InstallIfNeeded mkfs.exfat exfatprogs
 
-   echo (set_color bryellow)"Canonicalising filenames in the dir: $tmp_dir..."(set_color normal)
-   photo-canonicalise-incoming $tmp_dir "$photo_incoming_dir"
+      set tmp_dir (RunVerbosely sudo mktemp -d /media/photo-transfer-XXXXX)
+      RunVerbosely sudo mount -o uid=(id -u) $part $tmp_dir
 
-   # echo (set_color bryellow)"Moving files from $tmp_dir to $photo_incoming_dir..."(set_color normal)
-   # find $tmp_dir -type f -print0 | xargs -0 -P (nproc) -I {} mv --no-clobber "{}" "$photo_incoming_dir"
+      echo (set_color bryellow)"Canonicalising filenames in the dir: $tmp_dir..."(set_color normal)
+      photo-canonicalise-incoming $tmp_dir "$photo_incoming_dir"
+      # echo (set_color bryellow)"Moving files from $tmp_dir to $photo_incoming_dir..."(set_color normal)
+      # find $tmp_dir -type f -print0 | xargs -0 -P (nproc) -I {} mv --no-clobber "{}" "$photo_incoming_dir"
+   end
 
    read -P "Check the dir: $tmp_dir and press 'y' key to umount and format, or any other key to exit: " answer || return
    if test "$answer" != "y"
