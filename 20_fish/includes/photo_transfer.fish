@@ -121,7 +121,7 @@ function photo-transfer
       end
 
       RunVerbosely sudo mkdir -p $photo_incoming_dir || return 1
-      RunVerbosely sudo chown -R (whoami):(whoami) $photo_incoming_dir
+      RunVerbosely sudo chown (whoami):(whoami) $photo_incoming_dir
       InstallIfNeeded exiftool   exiftool
       InstallIfNeeded jq         jq
       InstallIfNeeded mkfs.exfat exfatprogs
