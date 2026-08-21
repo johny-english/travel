@@ -6,7 +6,7 @@
 
 
 - name: Manage groups and user membership for "{{ user.name }}"
-  when: user.groups
+  when: user.groups | default([]) | length > 0
   become: true
   block:
     - name: Ensure groups exist for "{{ user.name }}"
