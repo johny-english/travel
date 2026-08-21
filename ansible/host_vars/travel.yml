@@ -6,15 +6,12 @@ users:
      groups: [sudo, docker, video]
      packages:
         add_sys_repos: # as opposed to pip, rust, etc...
-           - gpg    : data/google-Linux-Packages-Signing-Authority.pub.gpg
-             sources: data/google-chrome.sources
            - gpg    : data/gpgsecurity.microsoft.com.gpg
              sources: data/packages.microsoft.com.sources
            - gpg    : data/brave-browser-archive-keyring.gpg
              sources: data/brave-browser.sources
         add_sys_pkgs: [
            filelight           , kdiff3             , kompare             , krusader          ,
-           google-chrome-stable, google-chrome-beta ,
            git                 , curl               , apt-file            , bat               ,
            htop                , ppa-purge          , qrencode            , ripgrep           ,
            python3-docker      , python3-pexpect                                              ,
